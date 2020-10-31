@@ -14,11 +14,13 @@ namespace MiCarpeta.Domain
     {
         private readonly IConfiguration Configuration;
         private readonly ICiudadanoRepository CiudadanoRepository;
+        private readonly IUsuariosRepository UsuariosRepository;
 
-        public CiudadanoDomainService(ICiudadanoRepository ciudadanoRepository, IConfiguration configuration)
+        public CiudadanoDomainService(ICiudadanoRepository ciudadanoRepository, IConfiguration configuration, IUsuariosRepository usuariosRepository)
         {
             CiudadanoRepository = ciudadanoRepository;
             Configuration = configuration;
+            UsuariosRepository = usuariosRepository;
         }
 
         public Response RegistrarCiudadano(Ciudadano ciudadano)
@@ -47,12 +49,25 @@ namespace MiCarpeta.Domain
                         //Si no existre en el centralizador procedo con el registro
                         ciudadano.Id = DateTime.UtcNow.Ticks;
 
-                        if (CiudadanoRepository.Add(ciudadano))
+                        if (CiudadanoRepository.Add(ciudadano)) 
+                        {
+                            Usuarios usuario = new Usuarios {
+                                IdUsuario = ciudadano.Id,
+                                Usuario = ciudadano.Correo,
+                                Clave = ciudadano.Clave,
+                                IdRol = 1
+                            };
+
+                            UsuariosRepository.Add(usuario);
+
+
                             return new Response()
                             {
                                 Estado = 200,
                                 Mensaje = "El ciudadano ha sido registrado exitosamente."
                             };
+                        }
+                            
 
                         return new Response()
                         {

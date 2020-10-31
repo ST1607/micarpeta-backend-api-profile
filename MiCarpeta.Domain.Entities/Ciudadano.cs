@@ -5,6 +5,7 @@ namespace MiCarpeta.Domain.Entities
     public class Ciudadano
     {
         public long Id { get; set; }
+
         [Required]
         public string Nombres { get; set; }
 
@@ -25,6 +26,9 @@ namespace MiCarpeta.Domain.Entities
 
         [Required]
         public string Direccion { get; set; }
+
+        [Required]
+        public string Clave { get; set; }
 
         public int IdOperador { get; set; }
     }
