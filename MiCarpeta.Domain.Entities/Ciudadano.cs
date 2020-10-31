@@ -24,6 +24,8 @@ namespace MiCarpeta.Domain.Entities
         public string Telefono { get; set; }
 
         [Required]
+        public string Direccion { get; set; }
+
         public int IdOperador { get; set; }
     }
 }

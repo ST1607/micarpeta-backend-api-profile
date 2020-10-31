@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.IO;
+using RestSharp;
 
 namespace MiCarpeta.Domain
 {
@@ -35,26 +36,56 @@ namespace MiCarpeta.Domain
                     };
 
                 // Validar ante el centralizador
-                ValidarCiudadano(ciudadano.Identificacion);
+                string centralizadorResponse = ValidarCiudadanoCentralizador(ciudadano.Identificacion);
 
-                //Si no existre en el centralizador procedo con el registro
-                ciudadano.Id = DateTime.UtcNow.Ticks;
+                if (string.IsNullOrEmpty(centralizadorResponse))
+                {
+                    IRestResponse respuesta = RegistrarCiudadanoCentralizador(ciudadano);
 
-                if (CiudadanoRepository.Add(ciudadano))
+                    if (respuesta.StatusCode.Equals(HttpStatusCode.Created))
+                    {
+                        //Si no existre en el centralizador procedo con el registro
+                        ciudadano.Id = DateTime.UtcNow.Ticks;
+
+                        if (CiudadanoRepository.Add(ciudadano))
+                            return new Response()
+                            {
+                                Estado = 200,
+                                Mensaje = "El ciudadano ha sido registrado exitosamente."
+                            };
+
+                        return new Response()
+                        {
+                            Estado = 400,
+                            Errores = new List<string>()
+                        {
+                            $"Ha ocurrido un error al registrar el ciudadano. Por favor contacte al administrador del sistema"
+                        }
+                        };
+                    }
+                    else
+                    {
+                        return new Response()
+                        {
+                            Estado = 400,
+                            Errores = new List<string>()
+                            {
+                                respuesta.Content
+                            }
+                        };
+                    }
+                }
+                else
+                {
                     return new Response()
                     {
-                        Estado = 200,
-                        Mensaje = "El ciudadano ha sido registrado exitosamente."
+                        Estado = 400,
+                        Errores = new List<string>()
+                        {
+                            $"Ha ocurrido un error al registrar el ciudadano. Por favor contacte al administrador del sistema"
+                        }
                     };
-
-                return new Response()
-                {
-                    Estado = 400,
-                    Errores = new List<string>()
-                    {
-                        $"Ha ocurrido un error al registrar el ciudadano. Por favor contacte al administrador del sistema"
-                    }
-                };
+                }
             }
             catch (Exception ex)
             {
@@ -156,7 +187,8 @@ namespace MiCarpeta.Domain
             }
         }
 
-        private void ValidarCiudadano(string identificacion)
+        #region Centralizador
+        private string ValidarCiudadanoCentralizador(string identificacion)
         {
             string url = $"{Configuration["MiCarpeta:URL"]}apis/validateCitizen/{identificacion}";
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -171,10 +203,11 @@ namespace MiCarpeta.Domain
                 using (WebResponse response = request.GetResponse())
                 {
                     Stream strReader = response.GetResponseStream();
-                    if (strReader == null) return;
+                    if (strReader == null) return string.Empty;
                     using (StreamReader objReader = new StreamReader(strReader))
                     {
                         responseBody = objReader.ReadToEnd();
+                        return responseBody;
                     }
                 }
             }
@@ -184,5 +217,19 @@ namespace MiCarpeta.Domain
                 throw excep;
             }
         }
+
+        private IRestResponse RegistrarCiudadanoCentralizador(Ciudadano ciudadano)
+        {
+            var client = new RestClient($"{Configuration["MiCarpeta:URL"]}apis/registerCitizen");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddParameter("application/json", $"{{\n  \"id\": {ciudadano.Identificacion},\n  \"name\": \"{ciudadano.Nombres} {ciudadano.Apellidos}\",\n  \"address\": \"{ciudadano.Direccion}\",\n  \"email\": \"{ciudadano.Correo}\",\n  \"operatorId\": {Configuration["MiCarpeta:IdOperador"]},\n  \"operatorName\": \"{Configuration["MiCarpeta:NombreOperador"]}\"\n}}", ParameterType.RequestBody);
+            IRestResponse response = client.Execute(request);
+
+            return response;
+        }
+        #endregion
+
     }
 }
