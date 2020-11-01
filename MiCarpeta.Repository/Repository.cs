@@ -12,7 +12,7 @@ namespace MiCarpeta.Repository
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        private static readonly RegionEndpoint regionEndpoint = RegionEndpoint.USEast1;
+        private static readonly RegionEndpoint regionEndpoint = RegionEndpoint.SAEast1;
         public IConfiguration Configuration { get; }
 
         public Repository(IConfiguration configuration)
