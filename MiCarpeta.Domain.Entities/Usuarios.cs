@@ -1,4 +1,6 @@
-﻿namespace MiCarpeta.Domain.Entities
+﻿using System;
+
+namespace MiCarpeta.Domain.Entities
 {
     public class Usuarios
     {
@@ -9,5 +11,9 @@
         public string Clave { get; set; }
 
         public int IdRol { get; set; }
+
+        public string Token { get; set; }
+
+        public DateTime VencimientoToken { get; set; }
     }
 }

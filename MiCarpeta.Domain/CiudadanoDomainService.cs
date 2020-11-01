@@ -55,7 +55,8 @@ namespace MiCarpeta.Domain
                                 IdUsuario = ciudadano.Id,
                                 Usuario = ciudadano.Correo,
                                 Clave = ciudadano.Clave,
-                                IdRol = 1
+                                IdRol = 1,
+                                
                             };
 
                             UsuariosRepository.Add(usuario);
@@ -245,6 +246,5 @@ namespace MiCarpeta.Domain
             return response;
         }
         #endregion
-
     }
 }

@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MiCarpeta.Application\MiCarpeta.Application.csproj" />
     <ProjectReference Include="..\MiCarpeta.Domain\MiCarpeta.Domain.csproj" />
   </ItemGroup>
